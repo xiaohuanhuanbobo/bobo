@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport"
+		content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=0">
+	<title>购物车</title>
+	<link rel="stylesheet" type="text/css" href="./css/cart.css" />
+	<link rel="stylesheet" href="./lib/iconfont/iconfont.css">
+	<script src="js/config.js"></script>
+</head>
+
+<body>
+	<div class="body">
+		<div class="shop"><i class="iconfont icon-fanhui"></i><span>我的购物车</span></div>
+		<div class="product">
+			<!-- 容器 -->
+		</div>
+	</div>
+	<!--购物车空-->
+	<div class="kon-cat">
+		<div class="catkon">
+			<div class="kon-box">
+				<div class="kon-hz">
+					<img src="img/cart-air.png" />
+					<span class="kon-wz">购物车什么都没有</span>
+					<a href="###" class="kon-lj">去逛逛</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+<script src="./lib/jquery.min.js"></script>
+<script src="./lib/template-web.js"></script>
+<script src="./js/cart.js" type="text/javascript" charset="utf-8"></script>
+
+
+<script type="text/html" id="shopping">
+{{each data}}
+
+	<div class="product-box">
+
+<div class="product-ckb">
+	<em class="product-em product-xz"></em>
+</div>
+<div class="product-sx"  data-id='{{$value.id}}'>
+	<a href="###">
+		<img src="http://www.shop.com{{$value.fileurl}}" class="product-img" />
+		<span class="product-name">{{$value.name}}</span>
+	</a>
+	<span class="product-price">¥&thinsp;<span class="price">{{$value.price}}</span></span>
+	<div class="product-amount">
+		<div class="product_gw">
+		   <em class="product-jian" data-id='{{$value.id}}' data-num="{{$value.num}}">-</em>
+		   <input type="text" value="{{$value.num}}" class="product-num" />
+		   <em class="product-add" data-id='{{$value.id}}' data-num="{{$value.num}}">+</em>
+		</div>
+	</div>
+	<div class="product-del">
+		<span class="iconfont icon-shanchu" data-id='{{$value.id}}'></span>
+	</div>
+</div>
+</div>
+{{/each}}
+</script>
+
+<script>
+
+	$(function () {
+		getcar();
+		removeCar();
+		toCar();
+	})
+	// 查看购物车
+	function getcar() {
+		// 获取token
+		var tk = localStorage.getItem('token');
+		$.get(domain + '/api/cart/getlist', { token: tk }, function (res) {
+			if (res.code === 2000) {
+				var shop = template('shopping', res);
+				console.log(res);
+				$('.product').html(shop);
+			} else {
+				alert(res.msg);
+			}
+		})
+	}
+
+	// 删除购物车
+	function removeCar() {
+		// 获取token
+		var tk = localStorage.getItem('token');
+		$('.product').on('click', '.icon-shanchu', function () {
+			console.log(1);
+			//获取商品id
+			var id = $(this).attr('data-id');
+			console.log(id, tk);
+			var data = {
+				id: id,
+				token: tk
+			}
+			$.get(domain + '/api/cart/remove', data, function (res) {
+				if (res.code === 2000) {
+					getcar();
+				} else {
+					alert(res.msg);
+				}
+			})
+		})
+	}
+
+	//  修改购物车
+	function toCar() {
+		// 获取token
+		var tk = localStorage.getItem('token');
+		$('.product').on('click', '.product-add', function (e) {
+			e.preventDefault();
+			//获取商品id
+			var id = $(this).attr('data-id');
+			var n1 = $(this).attr('data-num')*1;
+			n1++
+			// var num1 = parseInt(n1) + 1;
+			var data1= {
+				id: id,
+				token: tk,
+				num: n1
+			}
+			console.log(data1);
+			$.get(domain + '/api/cart/edit', data1, function (res) {
+				if (res.code === 2000) {
+					console.log(res);
+					getcar();
+				}
+			})
+		})
+		$('.product').on('click', '.product-jian', function (e) {
+			// e.preventDefault();
+			//获取商品id
+			var id = $(this).attr('data-id');
+			var n2 = $(this).attr('data-num')*1;
+			n2--;
+			if (n2 == 0) { return; }
+			var data2 = {
+				id: id,
+				token: tk,
+				num: n2
+			}
+			$.get(domain + '/api/cart/edit', data2, function (res) {
+				if (res.code === 2000) {
+					console.log(res);
+					getcar();
+				}
+			})
+		})
+	}
+</script>
+
+</html>
